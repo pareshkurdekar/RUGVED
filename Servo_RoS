@@ -1,0 +1,81 @@
+#include<ros.h>
+#include<std_msgs/Int64.h>
+#include<std_msgs/Int64.h>
+#include<Servo.h>
+
+Servo ser1,ser2;
+int flag;
+
+std_msgs::Int64 Deg1;
+std_msgs::Int64 Deg2;
+int pos1=0,pos2=0;
+ros::NodeHandle nh;
+
+ros::Publisher degree1("Servo1",&Deg1);
+ros::Publisher degree2("Servo2",&Deg2);
+
+void message( const std_msgs::Int64 &abc1 ){
+
+int abc=abc1.data;
+if(abc==0)
+  {
+    ser1.write(pos1);
+    Deg1.data=pos1;
+      Deg2.data=pos2;
+    
+  }
+  else if(abc==1)
+  {
+    if(pos1==180)
+    {
+      flag=0;
+      pos2=pos2+15;
+      ser2.write(pos2);
+    }
+    
+    if(pos1==0)
+    {
+      flag=1;  
+    }
+    
+   if(flag==0)
+    {
+      --pos1;
+      }
+      if(flag==1)
+      {
+      ++pos1;
+      }
+      ser1.write(pos1);
+
+      Deg1.data=pos1;
+      Deg2.data=pos2;
+      
+  }
+ degree1.publish(&Deg1);
+ degree2.publish(&Deg2);
+  }
+  
+  ros::Subscriber<std_msgs::Int64> sub("SUB", &message );
+
+void setup() {
+  // put your setup code here, to run once:
+nh.initNode();
+nh.advertise(degree1);
+nh.advertise(degree2);
+nh.subscribe(sub);
+ser1.write(pos1);
+ser2.write(pos2);
+}
+
+void loop() {
+  
+  nh.spinOnce(); 
+    
+  // put your main code here, to run repeatedly:
+
+delay(100);
+
+
+
+}
