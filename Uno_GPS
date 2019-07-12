@@ -1,0 +1,63 @@
+#include <SoftwareSerial.h>
+#include <TinyGPS.h>
+
+#include<string.h>
+#include<ros.h>
+#include <std_msgs/String.h>
+#include<std_msgs/Int32.h>
+
+std_msgs::String str_msg;
+std_msgs::Int32 tick1,tick2;
+
+
+ros::Publisher latitude("latitude" , &str_msg);
+
+ros::NodeHandle nh1;
+
+SoftwareSerial mySerial(10, 11); // RX, TX
+TinyGPS gps; // create gps object
+
+long lat,lon; // create variable for latitude and longitude object
+
+void setup() {
+  // Open serial communications and wait for port to open:
+  nh1.initNode();
+ nh1.advertise(latitude);
+ 
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+
+ // Serial.println("Goodnight moon!");
+
+  // set the data rate for the SoftwareSerial port
+  mySerial.begin(9600);
+ // mySerial.println("Hello, world?");
+}
+
+void loop() { // run over and over
+
+   nh1.spinOnce();
+   
+  if (mySerial.available()) {
+
+char c = mySerial.read();
+Serial.write( c );
+if (gps.encode( c ))
+      { // encode gps data
+      gps.get_position(&lat,&lon); // get latitude and longitude
+      // display position
+      //Serial.print("Position: ");
+     // Serial.print("lat: ");
+     lat.length();
+     Serial.print(lat);Serial.print(" ");// print latitude
+      //Serial.print("lon: ");
+      Serial.println(lon); // print longitude
+      }
+      str_msg.data  = lat;
+ latitude.publish(&str_msg);
+
+  }
+}
